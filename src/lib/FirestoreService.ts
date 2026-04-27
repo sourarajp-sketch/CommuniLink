@@ -56,11 +56,11 @@ export const assignmentsCollection = collection(db, "assignments");
 
 export const FirestoreService = {
   // --- Issues ---
-  async reportIssue(issue: any) {
+  async reportIssue(issue: any, userId?: string) {
     try {
       return await addDoc(issuesCollection, {
         ...issue,
-        reportedBy: auth.currentUser?.uid,
+        reportedBy: userId || auth.currentUser?.uid || 'guest_user',
         reportedAt: serverTimestamp(),
         status: "Open"
       });
@@ -78,13 +78,13 @@ export const FirestoreService = {
   },
 
   // --- Volunteers ---
-  async saveVolunteerProfile(profile: any) {
-    if (!auth.currentUser) return;
+  async saveVolunteerProfile(profile: any, userId?: string) {
+    const uid = userId || auth.currentUser?.uid || 'guest_user';
     try {
-      const docRef = doc(db, "volunteers", auth.currentUser.uid);
+      const docRef = doc(db, "volunteers", uid);
       return await setDoc(docRef, {
         ...profile,
-        userId: auth.currentUser.uid,
+        userId: uid,
         status: profile.status || "Available"
       }, { merge: true });
     } catch (error) {

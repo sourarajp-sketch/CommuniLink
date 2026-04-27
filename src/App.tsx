@@ -315,8 +315,8 @@ const VolunteerCard = ({ volunteer, user }: any) => {
 };
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [user, setUser] = useState<any>({ uid: 'guest_user', displayName: 'Admin Guest', email: 'sourarajp@gmail.com' });
+  const [authLoading, setAuthLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -389,17 +389,6 @@ export default function App() {
   }));
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setAuthLoading(false);
-    });
-
-    return () => unsubscribeAuth();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-
     const unsubIssues = FirestoreService.subscribeToIssues(setIssues);
     const unsubVolunteers = FirestoreService.subscribeToVolunteers(setVolunteers);
 
@@ -407,7 +396,7 @@ export default function App() {
       unsubIssues();
       unsubVolunteers();
     };
-  }, [user]);
+  }, []);
 
   const handleAiSummary = async () => {
     if (issues.length === 0) {
@@ -447,58 +436,6 @@ export default function App() {
     return (
       <div className="h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-slate-50 px-4">
-        <Card className="max-w-md w-full border-none shadow-xl">
-          <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-              <Users size={32} />
-            </div>
-            <div>
-              <CardTitle className="text-3xl font-bold text-slate-900 tracking-tight">CommuniLink</CardTitle>
-              <CardDescription className="text-lg">Empowering communities through coordinated local action.</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-slate-50 p-4 rounded-xl space-y-3">
-              <div className="flex items-center gap-3 text-slate-600">
-                <CheckCircle2 className="text-green-500" size={20} />
-                <span className="text-sm font-medium">Track community needs in real-time</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <CheckCircle2 className="text-green-500" size={20} />
-                <span className="text-sm font-medium">AI-powered volunteer matching</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <CheckCircle2 className="text-green-500" size={20} />
-                <span className="text-sm font-medium">Visual impact dashboards</span>
-              </div>
-            </div>
-            <Button 
-              className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-100 transform transition active:scale-95 flex gap-2 items-center justify-center"
-              onClick={async () => {
-                try {
-                  setAuthLoading(true);
-                  await signInWithGoogle();
-                } catch (error: any) {
-                  console.error("Sign in error:", error);
-                  toast.error("Failed to sign in: " + (error.message || "Unknown error"));
-                  setAuthLoading(false);
-                }
-              }}
-            >
-              <Mail size={20} /> Sign in with Google
-            </Button>
-          </CardContent>
-          <CardFooter className="justify-center border-t border-slate-50 bg-slate-50/50 p-4">
-            <p className="text-xs text-slate-400 text-center uppercase tracking-widest font-bold">Secure Community Coordination</p>
-          </CardFooter>
-        </Card>
       </div>
     );
   }
@@ -590,19 +527,18 @@ export default function App() {
               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">System Status</p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-semibold">Cloud Sync Active</span>
+                <span className="text-xs font-semibold">Public Access View</span>
               </div>
             </div>
           )}
           <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-2xl border border-slate-100">
             <Avatar className="h-8 w-8 border border-white">
-              <AvatarImage src={user.photoURL || ""} />
-              <AvatarFallback>{user.displayName?.[0] || "U"}</AvatarFallback>
+              <AvatarFallback>{user.displayName?.[0] || "G"}</AvatarFallback>
             </Avatar>
             {isSidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-900 truncate">{user.displayName || "User"}</p>
-                <button onClick={() => auth.signOut()} className="text-[10px] text-slate-400 font-bold hover:text-indigo-600 uppercase">Logout</button>
+                <p className="text-xs font-bold text-slate-900 truncate">{user.displayName || "Guest"}</p>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Community Access</span>
               </div>
             )}
           </div>
