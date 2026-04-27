@@ -1,0 +1,100 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == "sourarajp@gmail.com";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+    
+    function isValidIssue(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.location is string && data.location.size() <= 200 &&
+             data.severity in ['Low', 'Medium', 'High', 'Critical'] &&
+             data.priority in ['Low', 'Medium', 'High', 'Urgent'] &&
+             data.status in ['Open', 'In Progress', 'Resolved', 'Closed'] &&
+             data.reportedAt == request.time &&
+             data.reportedBy == request.auth.uid;
+    }
+
+    function isValidVolunteer(data) {
+      return data.userId == request.auth.uid &&
+             data.fullName is string && data.fullName.size() <= 100 &&
+             data.skills is list && data.skills.size() <= 20 &&
+             data.status in ['Available', 'Busy', 'Inactive'] &&
+             (data.email == null || data.email is string);
+    }
+
+    function isValidAssignment(data) {
+      return data.issueId is string && data.volunteerId is string &&
+             data.status in ['Assigned', 'Accepted', 'Completed', 'Cancelled'] &&
+             data.assignedAt == request.time;
+    }
+
+    // --- Match Blocks ---
+
+    // Collection: Issues
+    match /issues/{issueId} {
+      allow read: if isSignedIn();
+      
+      allow create: if isEmailVerified() && isValidIssue(incoming()) && isValidId(issueId);
+      
+      allow update: if isEmailVerified() && (
+        // Action: Self-update by reporter
+        (isOwner(existing().reportedBy) && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'location', 'severity', 'priority', 'status'])) ||
+        // Action: Volunteer taking assignment
+        (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['assignedVolunteerId', 'status']))
+      );
+      
+      allow delete: if isAdmin() || (isEmailVerified() && existing().status == "Resolved" && isOwner(existing().reportedBy));
+    }
+
+    // Collection: Volunteers
+    match /volunteers/{volunteerId} {
+      allow read: if isSignedIn();
+      allow create: if isEmailVerified() && isValidVolunteer(incoming()) && (volunteerId == request.auth.uid);
+      allow update: if isEmailVerified() && isOwner(existing().userId) && 
+                      incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'skills', 'location', 'availability', 'availabilityDescription', 'status', 'email']);
+    }
+
+    // Collection: Assignments
+    match /assignments/{assignmentId} {
+      allow read: if isSignedIn();
+      allow create: if isEmailVerified() && isValidAssignment(incoming()) && isValidId(assignmentId);
+      allow update: if isEmailVerified() && (isOwner(existing().volunteerId) || isOwner(get(/databases/$(database)/documents/issues/$(existing().issueId)).data.reportedBy));
+    }
+  }
+}

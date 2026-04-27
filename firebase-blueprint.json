@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Issue": {
+      "title": "Community Issue",
+      "description": "A reported community need or problem.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "location": { "type": "string" },
+        "severity": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Urgent"] },
+        "status": { "type": "string", "enum": ["Open", "In Progress", "Resolved", "Closed"] },
+        "category": { "type": "string" },
+        "reportedBy": { "type": "string" },
+        "reportedAt": { "type": "string", "format": "date-time" },
+        "assignedVolunteerId": { "type": "string" }
+      },
+      "required": ["title", "description", "location", "severity", "priority", "status", "reportedAt"]
+    },
+    "Volunteer": {
+      "title": "Volunteer Profile",
+      "description": "Details about a community volunteer.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "location": { "type": "string" },
+        "availability": { "type": "string" },
+        "rating": { "type": "number" },
+        "status": { "type": "string", "enum": ["Available", "Busy", "Inactive"] }
+      },
+      "required": ["userId", "fullName", "skills", "status"]
+    },
+    "Assignment": {
+      "title": "Task Assignment",
+      "description": "A mapping of a volunteer to an issue.",
+      "type": "object",
+      "properties": {
+        "issueId": { "type": "string" },
+        "volunteerId": { "type": "string" },
+        "assignedAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Assigned", "Accepted", "Completed", "Cancelled"] }
+      },
+      "required": ["issueId", "volunteerId", "assignedAt", "status"]
+    }
+  },
+  "firestore": {
+    "issues/{issueId}": {
+      "schema": "Issue",
+      "description": "Collection of community needs."
+    },
+    "volunteers/{volunteerId}": {
+      "schema": "Volunteer",
+      "description": "Collection of volunteer profiles."
+    },
+    "assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "Collection of task assignments."
+    }
+  }
+}

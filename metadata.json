@@ -1,0 +1,6 @@
+{
+  "name": "CommuniLink",
+  "description": "A centralized coordination platform for NGOs to track community needs, match volunteers with tasks based on location and skills, and visualize impact through real-time dashboards.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}
