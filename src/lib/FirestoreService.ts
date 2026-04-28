@@ -78,8 +78,8 @@ export const FirestoreService = {
   },
 
   // --- Volunteers ---
-  async saveVolunteerProfile(profile: any, userId?: string) {
-    const uid = userId || auth.currentUser?.uid || 'guest_user';
+  async saveVolunteerProfile(profile: any, targetUserId?: string) {
+    const uid = targetUserId || profile.userId || auth.currentUser?.uid || 'guest_user';
     try {
       const docRef = doc(db, "volunteers", uid);
       return await setDoc(docRef, {

@@ -228,6 +228,8 @@ const IssueCard = ({ issue, volunteers, user, onAiMatch }: any) => {
 
 const VolunteerCard = ({ volunteer, user }: any) => {
   const isSelf = volunteer.userId === user?.uid;
+  const isAdmin = user?.email === "sourarajp@gmail.com";
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   return (
     <Card className="overflow-hidden border-slate-200 rounded-3xl hover:shadow-lg transition-all group">
@@ -265,12 +267,22 @@ const VolunteerCard = ({ volunteer, user }: any) => {
           </div>
         </div>
         
-        {volunteer.availabilityDescription && (
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Availability</p>
-            <p className="text-xs text-slate-600 font-medium italic line-clamp-1">{volunteer.availabilityDescription}</p>
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-4">
+          {volunteer.availability && (
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Time Committment</p>
+              <Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-100 bg-indigo-50/30">
+                {volunteer.availability}
+              </Badge>
+            </div>
+          )}
+          {volunteer.availabilityDescription && (
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Notes</p>
+              <p className="text-[10px] text-slate-600 font-medium italic line-clamp-1">{volunteer.availabilityDescription}</p>
+            </div>
+          )}
+        </div>
       </CardContent>
       <CardFooter className="pt-2 border-t border-slate-50 flex gap-2 p-4">
         <Dialog>
@@ -294,8 +306,8 @@ const VolunteerCard = ({ volunteer, user }: any) => {
           </DialogContent>
         </Dialog>
         
-        {isSelf && (
-          <Dialog>
+        {(isSelf || isAdmin) && (
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogTrigger render={
               <Button variant="outline" size="sm" className="flex-1 text-xs font-bold text-slate-600 border-slate-200 rounded-xl">
                 Edit Profile
@@ -304,7 +316,7 @@ const VolunteerCard = ({ volunteer, user }: any) => {
             <DialogContent className="rounded-3xl max-w-lg">
               <VolunteerProfileForm 
                 initialData={volunteer} 
-                onSubmitSuccess={() => {}} 
+                onSubmitSuccess={() => setIsEditDialogOpen(false)} 
               />
             </DialogContent>
           </Dialog>

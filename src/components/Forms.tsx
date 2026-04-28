@@ -162,7 +162,7 @@ export function VolunteerProfileForm({ onSubmitSuccess, initialData }: { onSubmi
         await FirestoreService.saveVolunteerProfile({
           ...formData,
           skills: formData.skills.split(",").map(s => s.trim()).filter(s => s !== "")
-        });
+        }, initialData?.userId);
         toast.success("Volunteer profile updated!");
         onSubmitSuccess();
       } catch (error) {
@@ -217,7 +217,7 @@ export function VolunteerProfileForm({ onSubmitSuccess, initialData }: { onSubmi
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="vlocation">Primary Location</Label>
                 <Input 
@@ -228,6 +228,24 @@ export function VolunteerProfileForm({ onSubmitSuccess, initialData }: { onSubmi
                   onChange={(e) => setFormData({...formData, location: e.target.value})}
                   className="rounded-xl"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="vavailability">Availability Type</Label>
+                <Select 
+                  value={formData.availability} 
+                  onValueChange={(v) => setFormData({...formData, availability: v})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Availability" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="Full-time">Full-time</SelectItem>
+                    <SelectItem value="Part-time">Part-time</SelectItem>
+                    <SelectItem value="Weekends Only">Weekends Only</SelectItem>
+                    <SelectItem value="Evenings Only">Evenings Only</SelectItem>
+                    <SelectItem value="On-Call">On-Call</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vstatus">Status</Label>
@@ -248,7 +266,7 @@ export function VolunteerProfileForm({ onSubmitSuccess, initialData }: { onSubmi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="vdesc">Availability Description</Label>
+              <Label htmlFor="vdesc">Detailed Availability Description</Label>
               <textarea 
                 id="vdesc" 
                 className="flex min-h-[80px] w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
