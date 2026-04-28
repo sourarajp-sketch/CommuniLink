@@ -5,15 +5,15 @@ let aiInstance: GoogleGenAI | null = null;
 function getAI() {
   if (!aiInstance) {
     // Priority order for API key:
-    // 1. process.env.GEMINI_API_KEY / GOOGLE_API_KEY (Defined by Vite)
-    // 2. import.meta.env.VITE_GEMINI_API_KEY / VITE_GOOGLE_API_KEY
+    // 1. process.env.GOOGLE_API_KEY / GEMINI_API_KEY (Defined by Vite define)
+    // 2. import.meta.env.VITE_GOOGLE_API_KEY / VITE_GEMINI_API_KEY
     const apiKey = 
+      process.env.GOOGLE_API_KEY || 
       process.env.GEMINI_API_KEY || 
-      process.env.GOOGLE_API_KEY ||
-      (import.meta as any).env.VITE_GEMINI_API_KEY || 
       (import.meta as any).env.VITE_GOOGLE_API_KEY ||
-      (import.meta as any).env.GEMINI_API_KEY ||
-      (import.meta as any).env.GOOGLE_API_KEY;
+      (import.meta as any).env.VITE_GEMINI_API_KEY || 
+      (import.meta as any).env.GOOGLE_API_KEY ||
+      (import.meta as any).env.GEMINI_API_KEY;
 
     if (!apiKey) {
       console.warn("API Key not found in environment.");
