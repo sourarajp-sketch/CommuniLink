@@ -4,11 +4,20 @@ let aiInstance: GoogleGenAI | null = null;
 
 function getAI() {
   if (!aiInstance) {
-    // Check both process.env (Vite define) and import.meta.env
-    const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env.GEMINI_API_KEY;
+    // Priority order for API key:
+    // 1. process.env.GEMINI_API_KEY / GOOGLE_API_KEY (Defined by Vite)
+    // 2. import.meta.env.VITE_GEMINI_API_KEY / VITE_GOOGLE_API_KEY
+    const apiKey = 
+      process.env.GEMINI_API_KEY || 
+      process.env.GOOGLE_API_KEY ||
+      (import.meta as any).env.VITE_GEMINI_API_KEY || 
+      (import.meta as any).env.VITE_GOOGLE_API_KEY ||
+      (import.meta as any).env.GEMINI_API_KEY ||
+      (import.meta as any).env.GOOGLE_API_KEY;
+
     if (!apiKey) {
-      console.warn("API Key search: process.env.GEMINI_API_KEY and import.meta.env.GEMINI_API_KEY are both missing");
-      throw new Error("GEMINI_API_KEY is not configured. Please add it to the Secrets panel in AI Studio settings.");
+      console.warn("API Key not found in environment.");
+      throw new Error("API Key is missing. Please add 'GOOGLE_API_KEY' to the 'Secrets' panel in AI Studio settings.");
     }
     aiInstance = new GoogleGenAI({ apiKey });
   }
