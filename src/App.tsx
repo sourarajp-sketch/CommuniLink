@@ -406,7 +406,10 @@ export default function App() {
     toast.promise(summarizeNeeds(issues), {
       loading: "AI is analyzing community needs...",
       success: (data) => data,
-      error: "Analysis failed."
+      error: (err: any) => {
+        console.error("AI Summary error:", err);
+        return `AI Error: ${err.message || "Analysis failed"}`;
+      }
     });
   };
 
@@ -428,7 +431,10 @@ export default function App() {
         setIsAiModalOpen(true);
         return `Found ${data.length} recommendations!`;
       },
-      error: "AI analysis failed."
+      error: (err: any) => {
+        console.error("AI Matching detail:", err);
+        return `AI Error: ${err.message || "Failed to analyze task"}`;
+      }
     });
   };
 

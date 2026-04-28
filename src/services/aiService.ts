@@ -1,10 +1,21 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured in the environment.");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export async function matchVolunteerToTask(issue: any, volunteers: any[]) {
   try {
+    const ai = getAI();
     const prompt = `
       Task Details:
       Title: ${issue.title}
@@ -37,14 +48,15 @@ export async function matchVolunteerToTask(issue: any, volunteers: any[]) {
 
     const results = JSON.parse(response.text || "[]");
     return results;
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Match Error:", error);
-    return [];
+    throw error; // Throw so the UI can handle the error message
   }
 }
 
 export async function summarizeNeeds(issues: any[]) {
   try {
+    const ai = getAI();
     const prompt = `
       Summarize the biggest community needs based on these reported issues:
       ${issues.map(i => `- ${i.title} (${i.severity}, ${i.location})`).join("\n")}
@@ -58,8 +70,8 @@ export async function summarizeNeeds(issues: any[]) {
     });
 
     return response.text;
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Summary Error:", error);
-    return "Failed to generate summary.";
+    return "AI generation failed. Please check your API configuration.";
   }
 }
